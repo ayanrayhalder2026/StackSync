@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackSync — Connect, Collaborate, and Code Across All Devices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#07090E',
+                            800: '#0D111A',
+                            700: '#161F30',
+                        },
+                        neon: {
+                            purple: '#9333EA',
+                            blue: '#2563EB',
+                            cyan: '#06B6D4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-dark-900 dark:text-gray-100 antialiased selection:bg-neon-purple selection:text-white transition-colors duration-300">
+
+    <!-- Global Top Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-dark-900/70 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showMainPage()">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-blue flex items-center justify-center shadow-lg shadow-neon-purple/25">
+                    <i class="fa-solid fa-code text-white text-base"></i>
+                </div>
+                <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 via-gray-700 to-neon-purple dark:from-white dark:via-gray-200 dark:to-neon-cyan bg-clip-text text-transparent">StackSync</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                <a href="#features" class="hover:text-neon-cyan transition">Features</a>
+                <a href="#compatibility" class="hover:text-neon-cyan transition">All Devices</a>
+                <a href="#pricing" class="hover:text-neon-cyan transition">Pricing</a>
+                <a href="#audience" class="hover:text-neon-cyan transition">Audience</a>
+            </div>
+            <div class="flex items-center space-x-4 relative">
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-dark-800 border border-gray-200 dark:border-gray-700/80 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:scale-105 transition shadow-sm" aria-label="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-sun dark:fa-moon text-sm"></i>
+                </button>
+                
+                <!-- Unauthenticated CTA -->
+                <div id="navAuthCta">
+                    <a href="#auth-section" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue font-bold text-sm text-white shadow-lg shadow-neon-purple/25 hover:shadow-neon-purple/40 hover:scale-[1.02] transition transform duration-200">Sign In</a>
+                </div>
+
+                <!-- Authenticated Profile Dropdown -->
+                <div id="navProfileContainer" class="hidden relative">
+                    <button onclick="toggleProfileDropdown()" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-dark-800 border border-gray-200 dark:border-gray-700 hover:border-neon-purple transition">
+                        <div id="userAvatarLogo" class="w-7 h-7 rounded-lg bg-gradient-to-tr from-neon-purple to-neon-blue text-white font-bold text-xs flex items-center justify-center">US</div>
+                        <span id="navUserName" class="text-xs font-bold text-gray-800 dark:text-gray-200 hidden sm:inline">User</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
+                    </button>
+
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-2xl py-2 z-50">
+                        <button onclick="openDashboardView()" class="w-full text-left px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 transition">
+                            <i class="fa-solid fa-gauge mr-2 text-neon-purple"></i> Dashboard
+                        </button>
+                        <button onclick="openFindTeamView()" class="w-full text-left px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 transition">
+                            <i class="fa-solid fa-users-viewfinder mr-2 text-emerald-500"></i> Find Team
+                        </button>
+                        <button onclick="openChatView()" class="w-full text-left px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 transition">
+                            <i class="fa-solid fa-comments mr-2 text-neon-blue"></i> Team Chat
+                        </button>
+                        <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                        <button onclick="logout()" class="w-full text-left px-4 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. MAIN LANDING PAGE -->
+    <div id="mainPageContent">
+        <!-- Hero Section -->
+        <section class="relative pt-36 pb-24 md:pt-48 md:pb-36 overflow-hidden">
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-neon-purple/15 rounded-full blur-[140px] pointer-events-none"></div>
+            <div class="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-neon-blue/15 rounded-full blur-[120px] pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+                <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white dark:bg-dark-800/80 border border-gray-200/80 dark:border-gray-700/60 mb-6 shadow-sm backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-neon-cyan animate-pulse"></span>
+                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300 tracking-wider uppercase">Cross-Platform Campus Collaboration</span>
+                </div>
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight max-w-4xl mx-auto leading-[1.1] mb-6">
+                    Connect, Collaborate, and Code on <span class="bg-gradient-to-r from-neon-purple via-neon-blue to-neon-cyan bg-clip-text text-transparent">Any Device</span>.
+                </h1>
+                <p class="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+                    Eradicate ghosting and misaligned skill sets. StackSync pairs students using intelligent algorithmic matching, fully optimized for mobile, tablet, desktop, and web.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#auth-section" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue font-bold text-white shadow-xl shadow-neon-purple/30 hover:scale-105 transition text-center">Get Started Now</a>
+                    <a href="#compatibility" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-gray-300 hover:border-gray-400 transition text-center shadow-sm">View Device Support</a>
+                </div>
+
+                <!-- Hero preview graphic showcasing cross-device harmony -->
+                <div class="mt-16 relative max-w-5xl mx-auto rounded-3xl p-3 bg-gradient-to-b from-gray-200/80 dark:from-gray-700/40 to-transparent shadow-2xl backdrop-blur-xl">
+                    <div class="rounded-2xl overflow-hidden bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-2xl relative">
+                        <div class="absolute top-4 left-4 z-20 hidden sm:flex items-center space-x-2 bg-dark-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-700">
+                            <i class="fa-solid fa-mobile-screen text-neon-cyan text-xs"></i>
+                            <i class="fa-solid fa-tablet-screen-button text-neon-blue text-xs"></i>
+                            <i class="fa-solid fa-laptop text-neon-purple text-xs"></i>
+                            <i class="fa-solid fa-desktop text-emerald-400 text-xs"></i>
+                            <span class="text-[10px] font-bold text-gray-300 ml-1">100% Responsive Sync</span>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80" alt="Students collaborating across devices" class="w-full h-auto object-cover opacity-90 dark:opacity-85 hover:opacity-100 transition duration-500">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. FEATURES SECTION -->
+        <section id="features" class="py-24 bg-white dark:bg-dark-900 border-t border-gray-200/60 dark:border-gray-800/85 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-extrabold text-neon-purple uppercase tracking-widest bg-neon-purple/10 px-3 py-1.5 rounded-lg">Powerful Capabilities</span>
+                    <h2 class="text-3xl md:text-5xl font-extrabold mt-4 mb-4 tracking-tight">Engineered for Seamless Teamwork</h2>
+                    <p class="text-gray-600 dark:text-gray-400 font-medium">Everything you need to form high-performing developer pods, manage repositories, and ship projects without friction.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-neon-purple transition shadow-sm flex flex-col">
+                        <div class="w-12 h-12 rounded-2xl bg-neon-purple/10 text-neon-purple flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Algorithmic Matching</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Pairs teammates by complementing tech stacks (Python, React, etc.) and availability to eliminate project ghosting.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-neon-blue transition shadow-sm flex flex-col">
+                        <div class="w-12 h-12 rounded-2xl bg-neon-blue/10 text-neon-blue flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-comments-dollar"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Real-Time Team Channels</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Built-in messaging rooms for active sprint collaborators to coordinate updates, share code snippets, and sync milestones.</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-neon-cyan transition shadow-sm flex flex-col">
+                        <div class="w-12 h-12 rounded-2xl bg-neon-cyan/10 text-neon-cyan flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Role-Based Security</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Custom privileges for Admins, Team Leaders, and Members ensuring organized project governance and code review workflows.</p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-emerald-500 transition shadow-sm flex flex-col">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">StackSync AI Assistant</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">Movable assistant widget to provide instant guidance on team pairing, workflow setup, and repository tips.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. NEW: COMPATIBLE WITH ALL DEVICES SECTION -->
+        <section id="compatibility" class="py-24 bg-gray-50 dark:bg-dark-800/40 border-t border-gray-200/60 dark:border-gray-800/80 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-extrabold text-neon-cyan uppercase tracking-widest bg-neon-cyan/10 px-3 py-1.5 rounded-lg">Universal Compatibility</span>
+                    <h2 class="text-3xl md:text-5xl font-extrabold mt-4 mb-4 tracking-tight">Optimized for Every Screen & Device</h2>
+                    <p class="text-gray-600 dark:text-gray-400 font-medium">Whether you are reviewing pull requests on your mobile phone during a commute or architecting databases on a high-res workstation monitor, StackSync adapts effortlessly.</p>
+                </div>
+
+                <!-- Device Grid Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Mobile Phones -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700 shadow-xl flex flex-col justify-between group hover:border-neon-cyan transition">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-neon-cyan/20 to-neon-blue/20 text-neon-cyan flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            </div>
+                            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white mb-3">Mobile Smartphones</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Fully responsive touch navigation, collapsible mobile menu drawers, and instant chat messaging optimized for iOS and Android web browsers.</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-neon-cyan">
+                            <span>iOS & Android Ready</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tablets -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700 shadow-xl flex flex-col justify-between group hover:border-neon-blue transition">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-neon-blue/20 to-neon-purple/20 text-neon-blue flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-tablet-screen-button"></i>
+                            </div>
+                            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white mb-3">Tablets & iPads</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Fluid multi-column layouts designed for iPadOS and Android tablets. Perfect for reviewing team kanban boards and brainstorming sprints on the go.</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-neon-blue">
+                            <span>Split-Screen Friendly</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Laptops / Desktops -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700 shadow-xl flex flex-col justify-between group hover:border-neon-purple transition">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-neon-purple/20 to-pink-500/20 text-neon-purple flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-laptop-code"></i>
+                            </div>
+                            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white mb-3">Laptops & Desktops</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">High-performance dashboard views with persistent sidebars, keyboard shortcuts, fast data syncing, and multi-window team management.</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-neon-purple">
+                            <span>Mac, Windows & Linux</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- PWA / Web Apps -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700 shadow-xl flex flex-col justify-between group hover:border-emerald-500 transition">
+                        <div>
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 text-emerald-500 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                            <h3 class="text-xl font-extrabold text-gray-900 dark:text-white mb-3">All Modern Browsers</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Zero installation required. Works natively in Chrome, Safari, Firefox, and Edge with hardware acceleration and automatic cloud state persistence.</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-emerald-500">
+                            <span>Zero-Install PWA Ready</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. PRICING SECTION (INDIAN CURRENCY ₹) -->
+        <section id="pricing" class="py-24 bg-white dark:bg-dark-900 border-t border-gray-200/60 dark:border-gray-800/80 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-extrabold text-neon-blue uppercase tracking-widest bg-neon-blue/10 px-3 py-1.5 rounded-lg">Transparent Pricing</span>
+                    <h2 class="text-3xl md:text-5xl font-extrabold mt-4 mb-4 tracking-tight">Invest in Your Collaborative Growth</h2>
+                    <p class="text-gray-600 dark:text-gray-400 font-medium">Flexible pricing plans tailored for individual students, project leads, and campus tech societies across India.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                    <!-- Tier 1: Free -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs font-extrabold uppercase text-gray-400 tracking-wider mb-2">Student Tier</div>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-4">Starter</h3>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-4xl font-extrabold">₹0</span>
+                                <span class="text-xs text-gray-500 ml-2 font-bold">/ forever</span>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">Perfect for undergraduate students looking for project partners and hackathon teams on any device.</p>
+                            <ul class="space-y-3 text-xs text-gray-700 dark:text-gray-300 font-medium mb-8">
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Algorithmic Team Matching</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Standard Community Chat</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Profile & Tech Stack Setup</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Cross-Device Cloud Sync</li>
+                            </ul>
+                        </div>
+                        <a href="#auth-section" class="w-full py-3 rounded-xl bg-gray-200 dark:bg-dark-700 text-gray-900 dark:text-white font-bold text-xs hover:bg-gray-300 transition text-center">Get Started Free</a>
+                    </div>
+
+                    <!-- Tier 2: Pro (Highlighted) -->
+                    <div class="p-8 rounded-3xl bg-gradient-to-b from-dark-800 to-dark-900 text-white border-2 border-neon-purple shadow-2xl flex flex-col justify-between relative transform md:-translate-y-2">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-neon-purple to-neon-blue text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Most Popular</div>
+                        <div>
+                            <div class="text-xs font-extrabold uppercase text-neon-purple tracking-wider mb-2">Team Leader Tier</div>
+                            <h3 class="text-2xl font-black mb-4">Pro Collaborator</h3>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-4xl font-extrabold">₹499</span>
+                                <span class="text-xs text-gray-400 ml-2 font-bold">/ month</span>
+                            </div>
+                            <p class="text-xs text-gray-300 mb-6 leading-relaxed">Designed for project leaders managing active sprint rooms and multi-developer tasks across mobile and desktop.</p>
+                            <ul class="space-y-3 text-xs text-gray-200 font-medium mb-8">
+                                <li class="flex items-center"><i class="fa-solid fa-check text-neon-cyan mr-2"></i> Everything in Starter</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-neon-cyan mr-2"></i> Unlimited Sprint Room Hosting</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-neon-cyan mr-2"></i> Priority Algorithmic Matching</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-neon-cyan mr-2"></i> Anti-Ghosting & Override Controls</li>
+                            </ul>
+                        </div>
+                        <a href="#auth-section" class="w-full py-3 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue text-white font-bold text-xs shadow-lg hover:scale-105 transition text-center">Choose Pro Plan</a>
+                    </div>
+
+                    <!-- Tier 3: Enterprise -->
+                    <div class="p-8 rounded-3xl bg-gray-50 dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs font-extrabold uppercase text-gray-400 tracking-wider mb-2">Campus Societies</div>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-4">Enterprise</h3>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-4xl font-extrabold">₹1,999</span>
+                                <span class="text-xs text-gray-500 ml-2 font-bold">/ month</span>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">For university clubs and tech organizations running internal hackathons and capstones across all hardware.</p>
+                            <ul class="space-y-3 text-xs text-gray-700 dark:text-gray-300 font-medium mb-8">
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Everything in Pro</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Institutional Admin Dashboard</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Custom Hackathon Roosters</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Dedicated Support Channel</li>
+                            </ul>
+                        </div>
+                        <a href="#auth-section" class="w-full py-3 rounded-xl bg-gray-200 dark:bg-dark-700 text-gray-900 dark:text-white font-bold text-xs hover:bg-gray-300 transition text-center">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. AUDIENCE SECTION -->
+        <section id="audience" class="py-24 bg-gray-50 dark:bg-dark-900/50 border-t border-gray-200/60 dark:border-gray-800/80 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-extrabold text-neon-cyan uppercase tracking-widest bg-neon-cyan/10 px-3 py-1.5 rounded-lg">Who It's For</span>
+                    <h2 class="text-3xl md:text-5xl font-extrabold mt-4 mb-4 tracking-tight">Built for Modern Campus Innovators</h2>
+                    <p class="text-gray-600 dark:text-gray-400 font-medium">StackSync bridges the gap between passionate coders, project managers, and university tech communities.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Audience 1 -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-neon-purple transition shadow-sm">
+                        <div class="w-12 h-12 rounded-2xl bg-neon-purple/10 text-neon-purple flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">University Students</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">BCA, B.Tech, and undergraduate students looking to find reliable teammates with complementary skill sets for academic capstones and coding competitions.</p>
+                        <div class="text-xs font-bold text-neon-purple flex items-center">
+                            <span>Explore Algorithmic Matching</span> <i class="fa-solid fa-arrow-right ml-2 text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Audience 2 -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-neon-blue transition shadow-sm">
+                        <div class="w-12 h-12 rounded-2xl bg-neon-blue/10 text-neon-blue flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Team Leaders & Project Leads</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Student leads and organizers who need structured sprint rooms, task management tools, and anti-ghosting overrides to keep team momentum high.</p>
+                        <div class="text-xs font-bold text-neon-blue flex items-center">
+                            <span>Manage Sprint Rooms</span> <i class="fa-solid fa-arrow-right ml-2 text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Audience 3 -->
+                    <div class="p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 hover:border-emerald-500 transition shadow-sm">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl mb-6">
+                            <i class="fa-solid fa-users-rectangle"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Campus Tech Societies</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-6">Student clubs, Google Developer groups, and hackathon committees organizing internal innovation events and managing member collaboration channels.</p>
+                        <div class="text-xs font-bold text-emerald-500 flex items-center">
+                            <span>Scale Your Community</span> <i class="fa-solid fa-arrow-right ml-2 text-[10px]"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Auth Section -->
+        <section id="auth-section" class="py-28 bg-gray-100/80 dark:bg-gradient-to-b dark:from-dark-900 dark:to-dark-800 border-t border-gray-200/60 dark:border-gray-800/80 transition-colors duration-300">
+            <div class="max-w-2xl mx-auto px-4 sm:px-6">
+                <div id="authCard" class="p-8 md:p-10 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/80 shadow-2xl">
+                    <div class="flex rounded-xl bg-gray-100 dark:bg-dark-900 p-1 mb-8">
+                        <button onclick="switchAuthMode('login')" id="loginTab" class="flex-1 py-3 rounded-lg text-sm font-bold bg-white dark:bg-dark-700 text-gray-900 dark:text-white shadow-sm transition">Sign In</button>
+                        <button onclick="switchAuthMode('register')" id="registerTab" class="flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">Register</button>
+                    </div>
+
+                    <form id="authForm" onsubmit="handleAuth(event)">
+                        <div id="registerFields" class="hidden space-y-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">Full Name</label>
+                                <input type="text" id="regName" placeholder="Enter Your Name" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">Select Account Role</label>
+                                <select id="regRole" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple text-gray-700 dark:text-gray-300">
+                                    <option value="admin">Member of the StackSync Company</option>
+                                    <option value="leader">Team Leader</option>
+                                    <option value="student">Team Member</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">UserID</label>
+                                <input type="text" id="authUserId" required placeholder="Enter the UserID" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">Password</label>
+                                <input type="password" id="authPass" required placeholder="Enter the Password" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="authSubmitBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue font-bold text-white shadow-lg shadow-neon-purple/30 hover:scale-[1.01] transition">Sign In to Dashboard</button>
+                        <div id="authError" class="hidden mt-3 text-center text-xs font-bold text-red-400"></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="py-12 bg-white dark:bg-dark-900 border-t border-gray-200/60 dark:border-gray-800/80 text-center text-sm text-gray-500 transition-colors duration-300 font-medium">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-neon-purple to-neon-blue flex items-center justify-center">
+                        <i class="fa-solid fa-code text-white text-[10px]"></i>
+                    </div>
+                    <span class="font-bold text-gray-800 dark:text-gray-300">StackSync</span>
+                </div>
+                <div class="text-xs text-gray-500 flex items-center space-x-4">
+                    <span><i class="fa-solid fa-mobile-screen mr-1 text-neon-cyan"></i> Responsive PWA</span>
+                    <span><i class="fa-solid fa-shield-halved mr-1 text-neon-purple"></i> Secure Sync</span>
+                </div>
+                <div>&copy; 2026 StackSync Inc. All rights reserved.</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 2. PROFESSIONAL WEB DASHBOARD -->
+    <div id="dashboardPage" class="hidden min-h-screen pt-20 flex bg-gray-100 dark:bg-[#090C15] transition-colors duration-300">
+        
+        <!-- Dashboard Sidebar -->
+        <aside class="hidden lg:flex flex-col w-64 fixed left-0 top-20 bottom-0 border-r border-gray-200/80 dark:border-gray-800/80 bg-white/60 dark:bg-dark-900/60 backdrop-blur-xl z-40">
+            <div class="p-6">
+                <div class="text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Menu</div>
+                <nav class="space-y-2">
+                    <button onclick="openDashboardView()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-neon-purple/10 text-neon-purple font-bold transition">
+                        <i class="fa-solid fa-gauge w-5"></i> <span>Overview</span>
+                    </button>
+                    <button onclick="openFindTeamView()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-800 font-semibold transition">
+                        <i class="fa-solid fa-users-viewfinder w-5"></i> <span>Find Team</span>
+                    </button>
+                    <button onclick="openChatView()" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-800 font-semibold transition">
+                        <i class="fa-solid fa-comments w-5"></i> <span>Team Chat</span>
+                    </button>
+                </nav>
+            </div>
+            
+            <div class="p-6 mt-auto border-t border-gray-200/80 dark:border-gray-800/80">
+                <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold transition text-sm">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Sign Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Dashboard Main Content Area -->
+        <main class="flex-1 lg:ml-64 p-4 sm:p-6 md:p-10 overflow-y-auto">
+            <div class="max-w-6xl mx-auto space-y-8">
+                
+                <!-- Dashboard Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center space-x-5">
+                        <div id="dashAvatar" class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-blue text-white font-black text-3xl flex items-center justify-center shadow-lg shadow-neon-purple/20">US</div>
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight" id="dashName">User Name</h2>
+                            <div class="inline-flex items-center space-x-2 mt-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider" id="dashRoleBadge">Role</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openFindTeamView()" class="px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-sm shadow-md hover:scale-105 transition flex items-center justify-center">
+                        <i class="fa-solid fa-search mr-2"></i> Browse Teams
+                    </button>
+                </div>
+
+                <!-- KPI / Stats Widgets -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-none flex items-center justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Active Sprints</div>
+                            <div class="text-3xl font-black text-gray-900 dark:text-white mt-1">3</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-neon-blue/10 text-neon-blue flex items-center justify-center text-xl"><i class="fa-solid fa-rocket"></i></div>
+                    </div>
+                    <div class="p-6 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-none flex items-center justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Network Matches</div>
+                            <div class="text-3xl font-black text-gray-900 dark:text-white mt-1">14</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-neon-purple/10 text-neon-purple flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                    <div class="p-6 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-none flex items-center justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Profile Status</div>
+                            <div class="text-3xl font-black text-emerald-500 mt-1">98%</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl"><i class="fa-solid fa-shield-check"></i></div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <!-- Form Area (Spans 2 columns) -->
+                    <div class="xl:col-span-2 p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-none">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Profile Settings & Portfolio</h3>
+                        <form onsubmit="saveUserDetails(event)" class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Display Name</label>
+                                    <input type="text" id="editName" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple transition">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Platform UserID</label>
+                                    <input type="text" id="editUserId" disabled class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-dark-900/50 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-400 cursor-not-allowed">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Tech Stack / Languages</label>
+                                <input type="text" id="editTechStack" placeholder="Python, React, Tailwind, Git" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">Current Work / Bio</label>
+                                <textarea id="editWork" rows="4" placeholder="Describe your active projects or team contributions..." class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple transition"></textarea>
+                            </div>
+                            <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 gap-4">
+                                <div id="saveSuccessMsg" class="text-xs font-bold text-emerald-500 hidden bg-emerald-500/10 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-check mr-1"></i> Data Synced</div>
+                                <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue font-bold text-white text-sm shadow-lg shadow-neon-purple/20 hover:scale-[1.02] transition ml-auto">Update Profile</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Side Panels (Spans 1 column) -->
+                    <div class="space-y-6">
+                        <!-- Role Facilities Widget -->
+                        <div class="p-6 rounded-3xl bg-gradient-to-br from-neon-purple/10 to-neon-blue/10 border border-neon-purple/20 shadow-lg">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <i class="fa-solid fa-key text-neon-purple"></i>
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Access Level</h3>
+                            </div>
+                            <div id="roleFacilityContent" class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                                Loading platform privileges...
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity Widget -->
+                        <div class="p-6 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200/80 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-none">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Recent Activity</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 mt-1.5 rounded-full bg-emerald-400 flex-shrink-0"></div>
+                                    <div>
+                                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">System Login Successful</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">Just now</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 mt-1.5 rounded-full bg-neon-blue flex-shrink-0"></div>
+                                    <div>
+                                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200">Joined Sprint Room #402</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">2 days ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. FIND TEAM PAGE -->
+    <div id="findTeamPage" class="hidden pt-24 pb-12 max-w-6xl mx-auto px-4 sm:px-6 min-h-screen">
+        <div class="p-6 md:p-10 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col min-h-[75vh]">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-200 dark:border-gray-700 mb-6 gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                        <i class="fa-solid fa-users-viewfinder"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Find a Team</h3>
+                        <p class="text-xs text-gray-500 mt-1">Discover and apply to active campus projects seeking members</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button onclick="openDashboardView()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 text-xs font-bold transition">Back to Dashboard</button>
+                </div>
+            </div>
+
+            <!-- Search Area -->
+            <div class="relative mb-8">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" placeholder="Search by tech stack (e.g., Python, React), role, or project name..." class="w-full pl-12 pr-4 py-4 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-purple transition">
+            </div>
+
+            <!-- Teams Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Team Card 1 -->
+                <div class="p-6 rounded-2xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 hover:border-neon-purple transition shadow-sm flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-gray-900 dark:text-white text-lg">Project Falcon</h4>
+                        <span class="px-2 py-1 bg-neon-purple/10 text-neon-purple text-[10px] font-bold rounded-md">Urgent</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-6 flex-1 leading-relaxed">Building an AI-powered study assistant for campus students. We have the backend ready but need an expert for the UI design and component integration.</p>
+                    <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-auto">
+                        <div class="text-[11px] font-bold text-gray-500 mb-3">Seeking: <span class="text-neon-purple ml-1">React / UI Developer</span></div>
+                        <button class="w-full py-2.5 rounded-xl bg-neon-purple text-white text-xs font-bold hover:bg-purple-700 transition" onclick="alert('Application sent to Project Falcon!')">Apply to Team</button>
+                    </div>
+                </div>
+
+                <!-- Team Card 2 -->
+                <div class="p-6 rounded-2xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 hover:border-neon-blue transition shadow-sm flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-gray-900 dark:text-white text-lg">Campus Market App</h4>
+                        <span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-md">2 Days Left</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-6 flex-1 leading-relaxed">Creating a peer-to-peer marketplace mobile app for textbook exchange. Need help with database architecture, user auth, and API routes.</p>
+                    <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-auto">
+                        <div class="text-[11px] font-bold text-gray-500 mb-3">Seeking: <span class="text-neon-blue ml-1">Backend / Node.js</span></div>
+                        <button class="w-full py-2.5 rounded-xl bg-neon-blue text-white text-xs font-bold hover:bg-blue-700 transition" onclick="alert('Application sent to Campus Market App!')">Apply to Team</button>
+                    </div>
+                </div>
+
+                <!-- Team Card 3 -->
+                <div class="p-6 rounded-2xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 hover:border-emerald-500 transition shadow-sm flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-gray-900 dark:text-white text-lg">Eco-Nexus Tracker</h4>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-6 flex-1 leading-relaxed">Tracking carbon footprint across campus cafeterias using machine learning models to optimize food waste and supply chain efficiency.</p>
+                    <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-auto">
+                        <div class="text-[11px] font-bold text-gray-500 mb-3">Seeking: <span class="text-emerald-500 ml-1">Python / Data Sci</span></div>
+                        <button class="w-full py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:scale-105 transition" onclick="alert('Application sent to Eco-Nexus Tracker!')">Apply to Team</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. TEAM CHAT PAGE -->
+    <div id="chatPage" class="hidden pt-24 pb-12 max-w-5xl mx-auto px-4 sm:px-6 min-h-screen">
+        <div class="p-4 sm:p-6 md:p-8 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col h-[75vh]">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700 gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-neon-blue/20 text-neon-blue flex items-center justify-center font-bold flex-shrink-0">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">StackSync Team Channel</h3>
+                        <p class="text-xs text-gray-500">Live communication space for active campus sprint collaborators</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button onclick="openDashboardView()" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 text-xs font-bold transition">Back to Dashboard</button>
+                </div>
+            </div>
+
+            <div id="chatMessages" class="flex-1 overflow-y-auto py-6 space-y-4 pr-2">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-neon-purple text-white font-bold text-xs flex items-center justify-center flex-shrink-0">AI</div>
+                    <div class="p-4 rounded-2xl bg-gray-100 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 max-w-md text-xs text-gray-700 dark:text-gray-300">
+                        <div class="font-bold text-neon-purple mb-1">StackSync Bot</div>
+                        Welcome to the secure team messaging channel! Coordinate your tasks, share code snippets, and build your projects together across any device.
+                    </div>
+                </div>
+            </div>
+
+            <form onsubmit="sendChatMessage(event)" class="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+                <input type="text" id="chatInput" required placeholder="Type your message to teammates..." class="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-sm font-medium focus:outline-none focus:border-neon-blue">
+                <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-neon-purple to-neon-blue font-bold text-white text-sm shadow-md hover:scale-105 transition flex-shrink-0">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MOVABLE FLOATING AI ASSISTANT WIDGET -->
+    <div id="draggableAssistant" class="fixed bottom-6 right-6 z-[60] select-none cursor-grab active:cursor-grabbing">
+        <div id="assistantLogoBtn" onclick="toggleAssistantWidget()" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan text-white shadow-2xl shadow-neon-purple/40 flex items-center justify-center text-xl hover:scale-110 transition" aria-label="Open AI Assistant">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+
+        <div id="assistantWindow" class="hidden absolute bottom-16 right-0 w-[calc(100vw-3rem)] sm:w-96 rounded-3xl bg-white dark:bg-dark-800 border border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col h-[420px] overflow-hidden cursor-default">
+            <div class="p-4 bg-gradient-to-r from-neon-purple to-neon-blue text-white flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-robot text-sm"></i>
+                    <span class="font-bold text-xs">StackSync AI Assistant</span>
+                </div>
+                <button onclick="toggleAssistantWidget()" class="text-white hover:text-gray-200 text-xs font-bold" aria-label="Close Assistant"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="assistantMessages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+                <div class="p-3 rounded-2xl bg-gray-100 dark:bg-dark-900 text-gray-700 dark:text-gray-300">
+                    Hello! I'm your StackSync AI assistant. Need help with cross-device matchmaking or project pairing? Ask me anything!
+                </div>
+            </div>
+            <form onsubmit="sendAssistantQuery(event)" class="p-3 border-t border-gray-200 dark:border-gray-700 flex items-center space-x-2">
+                <input type="text" id="assistantInput" required placeholder="Ask AI Assistant..." class="flex-1 px-3 py-2 rounded-xl bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-gray-700 text-xs focus:outline-none focus:border-neon-purple">
+                <button type="submit" class="px-4 py-2 rounded-xl bg-neon-purple text-white text-xs font-bold shadow-md">Ask</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentAuthMode = 'login';
+        let currentUserSession = null;
+
+        const registeredUsers = {
+            'robinhind_ceo': { pass: 'Robin@124421', name: 'Robin Hind', role: 'admin', tech: 'Fullstack, Python, AI Agents', work: 'Building StackSync platform architecture & leading core strategy.' }
+        };
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function switchAuthMode(mode) {
+            currentAuthMode = mode;
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            const regFields = document.getElementById('registerFields');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const errorBox = document.getElementById('authError');
+            errorBox.classList.add('hidden');
+
+            if (mode === 'login') {
+                loginTab.className = "flex-1 py-3 rounded-lg text-sm font-bold bg-white dark:bg-dark-700 text-gray-900 dark:text-white shadow-sm transition";
+                registerTab.className = "flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition";
+                regFields.classList.add('hidden');
+                submitBtn.innerText = "Sign In to Dashboard";
+            } else {
+                registerTab.className = "flex-1 py-3 rounded-lg text-sm font-bold bg-white dark:bg-dark-700 text-gray-900 dark:text-white shadow-sm transition";
+                loginTab.className = "flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition";
+                regFields.classList.remove('hidden');
+                submitBtn.innerText = "Create Account & Access Hub";
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const userId = document.getElementById('authUserId').value.trim();
+            const password = document.getElementById('authPass').value;
+            const errorBox = document.getElementById('authError');
+            errorBox.classList.add('hidden');
+            const lowerUserId = userId.toLowerCase();
+
+            if (currentAuthMode === 'register') {
+                const name = document.getElementById('regName').value.trim();
+                const role = document.getElementById('regRole').value;
+
+                if (!name || !userId || !password) {
+                    errorBox.innerText = "Please fill in all registration fields.";
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+                if (registeredUsers[lowerUserId]) {
+                    errorBox.innerText = "This UserID is already taken. Please choose a unique UserID.";
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+
+                registeredUsers[lowerUserId] = { pass: password, name: name, role: role, tech: '', work: '' };
+                alert("Registration successful! You can now sign in.");
+                switchAuthMode('login');
+                document.getElementById('authUserId').value = userId;
+                document.getElementById('authPass').value = '';
+                return;
+            }
+
+            let matchedUser = registeredUsers[lowerUserId];
+            if (userId.toLowerCase() === 'robinhind_ceo' && password === 'Robin@124421') {
+                matchedUser = registeredUsers['robinhind_ceo'];
+            }
+
+            if (!matchedUser || matchedUser.pass !== password) {
+                errorBox.innerText = "Invalid UserID or Password. Please check your credentials.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            currentUserSession = { id: lowerUserId, ...matchedUser };
+            
+            document.getElementById('navAuthCta').classList.add('hidden');
+            document.getElementById('navProfileContainer').classList.remove('hidden');
+            document.getElementById('navUserName').innerText = currentUserSession.name;
+            const initials = currentUserSession.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userAvatarLogo').innerText = initials || 'US';
+
+            openDashboardView();
+        }
+
+        function hideAllViews() {
+            document.getElementById('mainPageContent').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.add('hidden');
+            document.getElementById('findTeamPage').classList.add('hidden');
+            document.getElementById('chatPage').classList.add('hidden');
+            document.getElementById('profileDropdown').classList.add('hidden');
+        }
+
+        function showMainPage() {
+            hideAllViews();
+            document.getElementById('mainPageContent').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openDashboardView() {
+            hideAllViews();
+            document.getElementById('dashboardPage').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            document.getElementById('dashName').innerText = currentUserSession.name;
+            document.getElementById('dashAvatar').innerText = currentUserSession.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            
+            const roleLabels = { 'admin': 'StackSync Admin', 'leader': 'Team Leader', 'student': 'Team Member' };
+            document.getElementById('dashRoleBadge').innerText = roleLabels[currentUserSession.role] || currentUserSession.role;
+
+            document.getElementById('editName').value = currentUserSession.name;
+            document.getElementById('editUserId').value = currentUserSession.id;
+            document.getElementById('editTechStack').value = currentUserSession.tech || '';
+            document.getElementById('editWork').value = currentUserSession.work || '';
+
+            const facilitiesEl = document.getElementById('roleFacilityContent');
+            if (currentUserSession.role === 'admin') {
+                facilitiesEl.innerHTML = "<p class='mb-2'>🛡️ <strong>Master Axis Enabled:</strong></p><ul class='list-disc pl-4 space-y-1 text-gray-500'><li>Global user moderation</li><li>Financial overview</li><li>Platform configuration access</li></ul>";
+            } else if (currentUserSession.role === 'leader') {
+                facilitiesEl.innerHTML = "<p class='mb-2'>⚡ <strong>Lead Enabled:</strong></p><ul class='list-disc pl-4 space-y-1 text-gray-500'><li>Sprint Room deployment</li><li>Analytics & PR review</li><li>Anti-ghosting overrides</li></ul>";
+            } else {
+                facilitiesEl.innerHTML = "<p class='mb-2'>🎯 <strong>Member Enabled:</strong></p><ul class='list-disc pl-4 space-y-1 text-gray-500'><li>Algorithmic Matcher</li><li>Room participation</li><li>Public showcase</li></ul>";
+            }
+        }
+
+        function openFindTeamView() {
+            hideAllViews();
+            document.getElementById('findTeamPage').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openChatView() {
+            hideAllViews();
+            document.getElementById('chatPage').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function saveUserDetails(e) {
+            e.preventDefault();
+            currentUserSession.name = document.getElementById('editName').value;
+            currentUserSession.tech = document.getElementById('editTechStack').value;
+            currentUserSession.work = document.getElementById('editWork').value;
+
+            registeredUsers[currentUserSession.id] = currentUserSession;
+
+            document.getElementById('dashName').innerText = currentUserSession.name;
+            document.getElementById('navUserName').innerText = currentUserSession.name;
+            const initials = currentUserSession.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('dashAvatar').innerText = initials;
+            document.getElementById('userAvatarLogo').innerText = initials;
+            
+            const msg = document.getElementById('saveSuccessMsg');
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatBox = document.getElementById('chatMessages');
+            const initials = currentUserSession.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+
+            const userMsgHTML = `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="p-4 rounded-2xl bg-neon-purple text-white max-w-md text-xs">
+                        <div class="font-bold mb-1">${currentUserSession.name}</div>
+                        ${text}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-neon-purple to-neon-blue text-white font-bold text-xs flex items-center justify-center flex-shrink-0">${initials}</div>
+                </div>`;
+            chatBox.insertAdjacentHTML('beforeend', userMsgHTML);
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(() => {
+                const peerMsgHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-neon-blue text-white font-bold text-xs flex items-center justify-center flex-shrink-0">SK</div>
+                        <div class="p-4 rounded-2xl bg-white dark:bg-dark-900 border border-gray-200 dark:border-gray-700 max-w-md text-xs text-gray-700 dark:text-gray-300">
+                            <div class="font-bold text-neon-blue mb-1">Siddharth Kumar</div>
+                            Got it! Checked the repository update on my tablet. Let's sync up soon.
+                        </div>
+                    </div>`;
+                chatBox.insertAdjacentHTML('beforeend', peerMsgHTML);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
+        }
+
+        function toggleAssistantWidget() {
+            const win = document.getElementById('assistantWindow');
+            win.classList.toggle('hidden');
+        }
+
+        function sendAssistantQuery(e) {
+            e.preventDefault();
+            const input = document.getElementById('assistantInput');
+            const q = input.value.trim();
+            if (!q) return;
+
+            const box = document.getElementById('assistantMessages');
+            box.insertAdjacentHTML('beforeend', `<div class="p-3 rounded-2xl bg-neon-purple text-white ml-auto max-w-[80%]">${q}</div>`);
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            setTimeout(() => {
+                box.insertAdjacentHTML('beforeend', `<div class="p-3 rounded-2xl bg-gray-100 dark:bg-dark-900 text-gray-700 dark:text-gray-300">StackSync runs seamlessly across all mobile, tablet, and desktop viewports. Use the sidebar or menu to navigate!</div>`);
+                box.scrollTop = box.scrollHeight;
+            }, 600);
+        }
+
+        const draggable = document.getElementById('draggableAssistant');
+        let isDragging = false, startX, startY, initialX, initialY;
+
+        draggable.addEventListener('mousedown', (e) => {
+            if (e.target.closest('#assistantWindow')) return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = draggable.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+            draggable.style.bottom = 'auto';
+            draggable.style.right = 'auto';
+            draggable.style.left = initialX + 'px';
+            draggable.style.top = initialY + 'px';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            draggable.style.left = (initialX + dx) + 'px';
+            draggable.style.top = (initialY + dy) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('hidden');
+        }
+
+        function logout() {
+            hideAllViews();
+            document.getElementById('mainPageContent').classList.remove('hidden');
+            document.getElementById('navProfileContainer').classList.add('hidden');
+            document.getElementById('navAuthCta').classList.remove('hidden');
+            document.getElementById('authUserId').value = '';
+            document.getElementById('authPass').value = '';
+            currentUserSession = null;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
